@@ -1,5 +1,6 @@
-import { Inbox } from "@/components/inbox";
+import { redirect } from "next/navigation";
+import { publicSupabaseConfig } from "@/lib/supabase/config";
 
 export default function Home() {
-  return <Inbox />;
+  redirect(publicSupabaseConfig() ? "/workspace" : "/demo");
 }

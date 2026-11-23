@@ -10,6 +10,7 @@ export type Message = {
   body: string;
   time: string;
   sentAt?: number;
+  deliveryStatus?: string;
 };
 
 export type Conversation = {
@@ -17,11 +18,14 @@ export type Conversation = {
   name: string;
   initials: string;
   color: "coral" | "sky" | "lilac" | "sand" | "mint";
-  page: typeof pages[number];
+  page: string;
+  pageId?: string;
+  contactId?: string;
   email?: string;
   status: typeof statuses[number];
   lead: typeof leadStages[number];
-  assignee?: typeof agents[number];
+  assignee?: string;
+  assigneeId?: string;
   tags: string[];
   unread: number;
   time: string;

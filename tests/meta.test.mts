@@ -2,7 +2,7 @@ import { createHmac } from "node:crypto";
 import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readMessengerEvents, verifySignature, verifySubscription } from "../src/lib/meta/webhook.ts";
+import { verifySignature, verifySubscription } from "../src/lib/meta/webhook.ts";
 import { createOAuthState, readOAuthState, sealPageToken, openPageToken } from "../src/lib/meta/oauth.ts";
 
 const raw = readFileSync(new URL("./fixtures/messenger.json", import.meta.url), "utf8");
@@ -21,17 +21,6 @@ test("returns the subscription challenge only for the configured token", () => {
   assert.equal(verifySubscription(query, "token"), "42");
   assert.equal(verifySubscription(query, "other"), null);
   assert.equal(verifySubscription(query, ""), null);
-});
-
-test("normalizes page messages and deduplicates by Page and message ID", () => {
-  const payload = JSON.parse(raw);
-  const message = payload.entry[0].messaging[0];
-  payload.entry[0].messaging.push(message, { ...message, message: { ...message.message, is_echo: true } });
-  assert.deepEqual(readMessengerEvents(payload), [{
-    pageId: "123456789", senderId: "234567890", messageId: "m_demo_001",
-    timestamp: 1737691200000, text: "Do you deliver to Quezon City?",
-  }]);
-  assert.throws(() => readMessengerEvents({ object: "page" }));
 });
 
 test("OAuth state is bound to actor, organization and browser and expires", () => {

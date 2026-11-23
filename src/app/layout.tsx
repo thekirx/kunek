@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { brand } from "@/lib/inbox/demo";
 import "./globals.css";
+import "./access.css";
 
 export const metadata: Metadata = {
   title: `Inbox · ${brand.name}`,

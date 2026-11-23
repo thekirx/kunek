@@ -1,4 +1,8 @@
-import { readMessengerEvents, verifySignature, verifySubscription } from "@/lib/meta/webhook";
+import { verifySignature, verifySubscription } from "@/lib/meta/webhook";
+import { parseMessengerEvents } from "@/lib/meta/events";
+import { after } from "next/server";
+import { enrichMessengerProfiles } from "@/lib/meta/profile";
+import { serviceClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
@@ -39,12 +43,21 @@ export async function POST(request: Request) {
     return new Response("Invalid signature", { status: 401 });
   }
 
+  let events;
   try {
-    const events = readMessengerEvents(JSON.parse(raw.toString("utf8")));
-    // Keep Meta's retries available until tenant-scoped persistence is wired.
-    if (events.length) return new Response("Message persistence is unavailable", { status: 503 });
-    return new Response("OK");
+    events = parseMessengerEvents(JSON.parse(raw.toString("utf8")));
   } catch {
     return new Response("Invalid webhook payload", { status: 400 });
+  }
+
+  if (!events.length) return new Response("OK");
+  try {
+    const db = serviceClient();
+    const { data, error } = await db.rpc("oniro_ingest_messenger_batch", { p_events: events });
+    if (error || !Array.isArray(data)) return new Response("Webhook storage unavailable", { status: 503 });
+    if (data.length) after(() => enrichMessengerProfiles(data));
+    return new Response("OK");
+  } catch {
+    return new Response("Webhook storage unavailable", { status: 503 });
   }
 }

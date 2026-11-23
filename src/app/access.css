@@ -1,0 +1,13 @@
+.oniro-access { min-height: 100dvh; padding: 32px 16px; display: grid; place-items: start center; background: #fbfaf7; color: #17231e; --surface: #fffefa; --paper: #fbfaf7; --ink: #17231e; --green: #07563e; --on-green: white; --line: #e8e7e1; --line-strong: #dcded6; --hover: #f0f1ea; --muted: #5d6760; }
+.oniro-panel { display: grid; gap: 16px; width: min(100%, 480px); padding: 22px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.oniro-panel.oniro-wide { width: min(100%, 700px); }
+.oniro-panel h1 { font-size: 23px; font-weight: 720; }
+.oniro-panel h2 { margin: 0 0 9px; font-size: 16px; font-weight: 700; }
+.oniro-panel p, .oniro-panel small { color: var(--muted); }
+.oniro-panel [role="alert"] { color: #9c2424; }
+.oniro-panel form, .oniro-panel label, .oniro-panel ul { display: grid; gap: 8px; }
+.oniro-panel input:not([type="hidden"]), .oniro-panel select { width: 100%; padding: 8px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--paper); }
+.oniro-panel form > [data-slot="button"] { justify-self: start; }
+.oniro-panel nav, .oniro-panel li form { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.oniro-panel li { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.oniro-panel a, .oniro-panel nav button { color: var(--green); text-decoration: underline; text-underline-offset: 3px; width: fit-content; }

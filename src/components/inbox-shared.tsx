@@ -4,6 +4,10 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Conversation } from "@/lib/inbox/demo";
 import { cn } from "@/lib/utils";
 
+export function initials(name: string) {
+  return name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase();
+}
+
 export function Initials({ contact, large }: { contact: Conversation; large?: boolean }) {
   return <Avatar className={cn("monogram", large && "monogram-large")} data-color={contact.color}>
     <AvatarFallback>{contact.initials}</AvatarFallback>
