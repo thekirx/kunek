@@ -1,0 +1,13 @@
+{
+  "object": "page",
+  "entry": [{
+    "id": "123456789",
+    "time": 1737691200000,
+    "messaging": [{
+      "sender": { "id": "234567890" },
+      "recipient": { "id": "123456789" },
+      "timestamp": 1737691200000,
+      "message": { "mid": "m_demo_001", "text": "Do you deliver to Quezon City?" }
+    }]
+  }]
+}
