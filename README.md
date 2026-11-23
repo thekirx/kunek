@@ -2,6 +2,8 @@
 
 Oniro Dev is a Messenger-first shared inbox for Philippine small businesses. The app provides a protected Supabase workspace and a separate demo. Pages are connected through Meta OAuth by an organization owner or admin.
 
+For engineering handoff, see the [handoff guide](HANDOFF.md), [change log](CHANGELOG.md), and [verification log](docs/VERIFICATION.md).
+
 ## Run the app
 
 Use Node.js 24 or newer.
