@@ -15,7 +15,7 @@ The last full check of the published code was for [Phase 2 commit `6bc5b66`](htt
 
 ## Unreleased Messenger reliability verification
 
-Lint, typecheck, production build, and all 25 Node tests passed. All five migrations and four SQL suites passed on a disposable PostgreSQL 17 database with Supabase auth roles. The new tests exercise historical and duplicate deliveries, resolved conversation reopening, bounded future timestamps, and a mixed valid and malformed webhook batch.
+Lint, typecheck, production build, and all 25 Node tests passed. All migrations and four SQL suites passed on a disposable PostgreSQL 17 database with Supabase auth roles. The new tests exercise historical and duplicate deliveries, resolved conversation reopening, bounded future timestamps, and a mixed valid and malformed webhook batch. A follow-up adds migration `0006` and a reopen case for a Meta clock trailing the database by seconds; all six migrations and four suites passed on PostgreSQL 16, three runs each.
 
 ## Reproduce checked-in tests
 

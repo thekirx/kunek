@@ -44,12 +44,15 @@ export async function POST(request: Request) {
   }
 
   let events;
+  const stats = { skipped: 0 };
   try {
-    events = parseMessengerEvents(JSON.parse(raw.toString("utf8")));
+    events = parseMessengerEvents(JSON.parse(raw.toString("utf8")), stats);
   } catch {
     return new Response("Invalid webhook payload", { status: 400 });
   }
 
+  // Only the count is logged. Event bodies can contain customer messages.
+  if (stats.skipped) console.warn(`Messenger webhook skipped ${stats.skipped} malformed event(s)`);
   if (!events.length) return new Response("OK");
   try {
     const db = serviceClient();

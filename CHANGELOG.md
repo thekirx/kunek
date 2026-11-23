@@ -6,7 +6,11 @@
 - Allow one minute of positive clock skew for Messenger timestamps when reserving a reply. The 24-hour age limit still applies.
 - Keep valid Messenger events in a signed delivery when a sibling event is malformed. Invalid JSON and invalid batch envelopes still receive HTTP 400.
 
-[Additive database migration](supabase/migrations/202611230005_messenger_reliability.sql) · [SQL regression suite](tests/db/messenger-reliability.sql)
+- Reopen on a customer message whose Meta timestamp trails resolution by up to one minute, because Meta's clock can lag the database clock that records resolution.
+- Log the number of malformed Messenger events skipped in a delivery, without event content.
+- Render protected workspace pages per request so a build without Supabase settings cannot produce a static redirect.
+
+[Additive database migration](supabase/migrations/202611230005_messenger_reliability.sql) · [Reopen clock tolerance migration](supabase/migrations/202611230006_reopen_clock_tolerance.sql) · [SQL regression suite](tests/db/messenger-reliability.sql)
 
 ## Phase 2 · November 24, 2026 · Manila
 

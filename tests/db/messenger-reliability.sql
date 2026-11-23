@@ -22,7 +22,7 @@ begin
   perform public.oniro_finish_channel(actor, org, (connection ->> 'channel_id')::uuid, (connection ->> 'operation_id')::uuid, true);
 
   event := jsonb_build_object('kind', 'message', 'pageId', 'reliability-page',
-    'senderId', 'reopen-customer', 'messageId', 'original', 'timestamp', now_ms - 60000);
+    'senderId', 'reopen-customer', 'messageId', 'original', 'timestamp', now_ms - 600000);
   thread_id := (public.oniro_ingest_messenger_event(event) ->> 'conversation_id')::uuid;
   perform public.oniro_mutate_conversation(actor, org, thread_id, 'status', '{"status":"resolved"}');
 
@@ -30,6 +30,14 @@ begin
   if (select status from public.conversations where id = thread_id) <> 'resolved' then
     failures := array_append(failures, 'A delayed pre-resolution message reopened the conversation');
   end if;
+
+  -- A message sent after resolution can carry a Meta timestamp a few seconds behind the database clock.
+  perform public.oniro_ingest_messenger_event(event || jsonb_build_object('messageId', 'trailing-clock', 'timestamp',
+    floor(extract(epoch from clock_timestamp()) * 1000) - 3000));
+  if not exists (select 1 from public.conversations where id = thread_id and status = 'open') then
+    failures := array_append(failures, 'A message with a slightly trailing Meta clock did not reopen the conversation');
+  end if;
+  perform public.oniro_mutate_conversation(actor, org, thread_id, 'status', '{"status":"resolved"}');
 
   event := event || jsonb_build_object('messageId', 'new-customer-message', 'timestamp', now_ms + 5000);
   perform public.oniro_ingest_messenger_event(event);

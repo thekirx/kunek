@@ -1,5 +1,6 @@
 import "server-only";
 import { notFound, redirect } from "next/navigation";
+import { connection } from "next/server";
 import { z } from "zod";
 import { currentSession, type SessionClient } from "./server";
 import { publicSupabaseConfig } from "./config";
@@ -14,6 +15,8 @@ export async function memberRole(db: SessionClient, userId: string, orgId: strin
 }
 
 export async function requireSession() {
+  // Render per request so a build without Supabase settings cannot bake in a static redirect.
+  await connection();
   if (!publicSupabaseConfig()) redirect("/login?notice=configuration");
   const session = await currentSession();
   if (!session.user) redirect("/login");

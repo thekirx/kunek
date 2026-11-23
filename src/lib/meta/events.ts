@@ -33,19 +33,28 @@ export type MessengerEvent = {
   watermark?: number;
 };
 
-export function parseMessengerEvents(payload: unknown): MessengerEvent[] {
+// Counts supported events dropped as malformed so callers can report them without logging content.
+export type MessengerParseStats = { skipped: number };
+
+export function parseMessengerEvents(payload: unknown, stats?: MessengerParseStats): MessengerEvent[] {
   const events = new Map<string, MessengerEvent>();
   for (const page of envelope.parse(payload).entry) {
     for (const candidate of page.messaging ?? []) {
       if (!candidate || typeof candidate !== "object") continue;
       if (!("message" in candidate || "delivery" in candidate || "read" in candidate)) continue;
       const parsed = eventShape.safeParse(candidate);
-      if (!parsed.success) continue;
+      if (!parsed.success) {
+        if (stats) stats.skipped += 1;
+        continue;
+      }
       const { sender, recipient, timestamp, message, delivery, read } = parsed.data;
       const echo = !!message?.is_echo;
       if ((echo ? sender.id : recipient.id) !== page.id) continue;
       const occurredAt = timestamp ?? delivery?.watermark ?? read?.watermark;
-      if (!occurredAt) continue;
+      if (!occurredAt) {
+        if (stats) stats.skipped += 1;
+        continue;
+      }
       const base = { pageId: page.id, senderId: echo ? recipient.id : sender.id, timestamp: occurredAt };
       const event: MessengerEvent | null = message
         ? { ...base, kind: echo ? "echo" : "message", messageId: message.mid, text: message.text ?? null,
