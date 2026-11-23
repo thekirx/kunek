@@ -1,5 +1,13 @@
 # Change log
 
+## Unreleased · Messenger reliability
+
+- Reopen a resolved conversation when a newly stored customer message is timestamped at or after resolution. Delayed older events and duplicates keep the current status.
+- Allow one minute of positive clock skew for Messenger timestamps when reserving a reply. The 24-hour age limit still applies.
+- Keep valid Messenger events in a signed delivery when a sibling event is malformed. Invalid JSON and invalid batch envelopes still receive HTTP 400.
+
+[Additive database migration](supabase/migrations/202611230005_messenger_reliability.sql) · [SQL regression suite](tests/db/messenger-reliability.sql)
+
 ## Phase 2 · November 24, 2026 · Manila
 
 [Commit `6bc5b66`](https://github.com/thekirx/kunek/commit/6bc5b66018093b6246000488314e751b48113ba1) · pushed to `main`

@@ -41,8 +41,8 @@ Use a Page you own or have permission to manage and an approved HTTPS developmen
 
 ## Delivery and inbox behavior
 
-- The webhook verifies the challenge and raw-body HMAC before parsing. It routes by the connected Page, stores each supported event transactionally, and acknowledges after durable processing. On a storage failure it returns HTTP 503 so Meta can retry. Replay and delivery receipts are processed idempotently.
-- Replies use the standard 24-hour Messenger response window, a durable request ID, and Meta's RESPONSE send type. An API acknowledgment is shown as sent. Delivered and read states come from Meta events. If a send might have succeeded, the reply stays unconfirmed and retries with the same request ID never resubmit it to Meta. A corresponding Meta message echo can reconcile it.
+- The webhook verifies the challenge and raw-body HMAC before parsing. It routes by the connected Page, stores each supported event transactionally, and acknowledges after durable processing. On a storage failure it returns HTTP 503 so Meta can retry. Replay and delivery receipts are processed idempotently. Malformed event records are skipped within a valid batch, and a newly stored customer message can reopen a resolved conversation.
+- Replies use the standard 24-hour Messenger response window, a durable request ID, and Meta's RESPONSE send type. Reservation allows one minute of clock skew for a customer timestamp ahead of the database clock. An API acknowledgment is shown as sent. Delivered and read states come from Meta events. If a send might have succeeded, the reply stays unconfirmed and retries with the same request ID never resubmit it to Meta. A corresponding Meta message echo can reconcile it.
 - The live inbox displays the 75 most recent conversations with up to 100 recent messages and notes per conversation. Analytics reflect the loaded records. The Composer sends text. Non-text inbound messages are represented as unsupported attachments. Page-scoped customer IDs are stored, and a profile name is fetched when Meta allows it, with a generic display name otherwise. History import and attachment sending are outside this phase.
 - Supabase Realtime triggers a fresh tenant-scoped read. The browser also refreshes periodically and when brought to the foreground. The demo uses local React state only.
 
@@ -58,7 +58,7 @@ npm run build
 To run the SQL suites, use an empty development stack with the migrations applied and set `ONIRO_DEV_DATABASE_URL` from `supabase status`.
 
 ```sh
-for file in tests/db/tenant-isolation.sql tests/db/phase2.sql tests/db/oauth-invitations.sql; do
+for file in tests/db/tenant-isolation.sql tests/db/phase2.sql tests/db/oauth-invitations.sql tests/db/messenger-reliability.sql; do
   psql "$ONIRO_DEV_DATABASE_URL" -v ON_ERROR_STOP=1 -f "$file" || exit 1
 done
 ```

@@ -1,8 +1,8 @@
 # Verification log
 
-## Last verified baseline
+## Last verified published baseline
 
-The last full code check was for [Phase 2 commit `6bc5b66`](https://github.com/thekirx/kunek/commit/6bc5b66018093b6246000488314e751b48113ba1). GitHub’s `main` was verified to point to this commit after the push.
+The last full check of the published code was for [Phase 2 commit `6bc5b66`](https://github.com/thekirx/kunek/commit/6bc5b66018093b6246000488314e751b48113ba1). GitHub’s `main` was verified to point to this commit after the push.
 
 | Check | Result and scope |
 | --- | --- |
@@ -12,6 +12,10 @@ The last full code check was for [Phase 2 commit `6bc5b66`](https://github.com/t
 | Browser and API smoke test | Passed against local Supabase Auth, PostgreSQL, and PostgREST. Covered signup, workspace creation, invite acceptance, cross-tenant denial, sign-out and sign-in, and demo isolation. A signed synthetic webhook produced one stored message across two deliveries. |
 | Responsive UI | Desktop and mobile browser checks passed against fixture API responses. Covered draft preservation, simulated send states, notes, and mobile pane navigation. |
 | Hosted Supabase, live Meta, and Realtime delivery | Pending. Local email confirmation was bypassed in the smoke setup. A hosted confirmation email, live Realtime events, and a real Messenger round trip still need to be tested. |
+
+## Unreleased Messenger reliability verification
+
+Lint, typecheck, production build, and all 25 Node tests passed. All five migrations and four SQL suites passed on a disposable PostgreSQL 17 database with Supabase auth roles. The new tests exercise historical and duplicate deliveries, resolved conversation reopening, bounded future timestamps, and a mixed valid and malformed webhook batch.
 
 ## Reproduce checked-in tests
 
@@ -28,7 +32,7 @@ npm run build
 For the SQL suites, point `ONIRO_DEV_DATABASE_URL` at a disposable development database after applying all migrations. The suites roll back their own fixtures. Use the [README’s Supabase setup](../README.md#configure-supabase) to start a local stack.
 
 ```sh
-for file in tests/db/tenant-isolation.sql tests/db/phase2.sql tests/db/oauth-invitations.sql; do
+for file in tests/db/tenant-isolation.sql tests/db/phase2.sql tests/db/oauth-invitations.sql tests/db/messenger-reliability.sql; do
   psql "$ONIRO_DEV_DATABASE_URL" -v ON_ERROR_STOP=1 -f "$file" || exit 1
 done
 ```

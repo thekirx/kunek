@@ -1,18 +1,20 @@
 import { z } from "zod";
 
-const externalId = z.string().min(1).max(250);
+const postgresText = z.string().refine((value) => value.isWellFormed() && !value.includes("\0"));
+const externalId = z.string().min(1).max(200).pipe(postgresText);
+const messageId = z.string().min(1).max(500).pipe(postgresText);
 const time = z.number().int().min(1).max(99_999_999_999_999);
 const eventShape = z.object({
   sender: z.object({ id: externalId }),
   recipient: z.object({ id: externalId }),
   timestamp: time.optional(),
   message: z.object({
-    mid: externalId,
-    text: z.string().optional(),
+    mid: messageId,
+    text: postgresText.optional(),
     is_echo: z.boolean().optional(),
     metadata: z.string().optional(),
   }).optional(),
-  delivery: z.object({ mids: z.array(externalId).optional(), watermark: time.optional() }).optional(),
+  delivery: z.object({ mids: z.array(messageId).optional(), watermark: time.optional() }).optional(),
   read: z.object({ watermark: time }).optional(),
 });
 const envelope = z.object({ object: z.literal("page"), entry: z.array(z.object({
@@ -37,11 +39,13 @@ export function parseMessengerEvents(payload: unknown): MessengerEvent[] {
     for (const candidate of page.messaging ?? []) {
       if (!candidate || typeof candidate !== "object") continue;
       if (!("message" in candidate || "delivery" in candidate || "read" in candidate)) continue;
-      const { sender, recipient, timestamp, message, delivery, read } = eventShape.parse(candidate);
+      const parsed = eventShape.safeParse(candidate);
+      if (!parsed.success) continue;
+      const { sender, recipient, timestamp, message, delivery, read } = parsed.data;
       const echo = !!message?.is_echo;
       if ((echo ? sender.id : recipient.id) !== page.id) continue;
       const occurredAt = timestamp ?? delivery?.watermark ?? read?.watermark;
-      if (!occurredAt) throw new Error("Messenger event has no timestamp");
+      if (!occurredAt) continue;
       const base = { pageId: page.id, senderId: echo ? recipient.id : sender.id, timestamp: occurredAt };
       const event: MessengerEvent | null = message
         ? { ...base, kind: echo ? "echo" : "message", messageId: message.mid, text: message.text ?? null,

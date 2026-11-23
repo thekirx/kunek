@@ -56,3 +56,16 @@ test("a successful API acknowledgment still needs a durable status update", asyn
   });
   assert.deepEqual(result, { status: "queued" });
 });
+
+test("keeps valid messages around malformed events and rejects an invalid envelope", () => {
+  const origin = { sender: { id: senderId }, recipient: { id: pageId }, timestamp };
+  const result = parseMessengerEvents({ object: "page", entry: [{ id: pageId, messaging: [
+    { ...origin, message: { mid: "before", text: "First" } },
+    { ...origin, message: { text: "Missing ID" } },
+    { ...origin, sender: { id: "1".repeat(201) }, message: { mid: "invalid-sender" } },
+    { ...origin, timestamp: undefined, message: { mid: "missing-time" } },
+    { ...origin, message: { mid: "after", text: "Second" } },
+  ] }] });
+  assert.deepEqual(result.map((event) => event.messageId), ["before", "after"]);
+  assert.throws(() => parseMessengerEvents({ object: "page", entry: null }));
+});
